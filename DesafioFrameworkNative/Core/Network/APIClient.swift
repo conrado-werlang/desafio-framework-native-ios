@@ -4,6 +4,7 @@
 //
 //  Created by Conrado Werlang on 11/08/25.
 //
+
 import Foundation
 
 struct APIClient {
