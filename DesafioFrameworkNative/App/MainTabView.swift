@@ -9,16 +9,16 @@ import SwiftUI
 struct MainTabView: View {
     var body: some View {
         TabView {
-            NewsFeedView()
+            NewsFeedView(source: .g1)
                 .tabItem {
                     Label("Notícias", systemImage: "newspaper")
                 }
 
-            Text("Agronegócio")
+            NewsFeedView(source: .agro)
                 .tabItem {
                     Label("Agronegócio", systemImage: "leaf")
                 }
-
+        
             Text("Menu")
                 .tabItem {
                     Label("Menu", systemImage: "list.bullet")

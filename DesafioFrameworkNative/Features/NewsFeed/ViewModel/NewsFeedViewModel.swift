@@ -15,12 +15,15 @@ final class NewsFeedViewModel: ObservableObject {
     @Published private(set) var items: [News] = []
     @Published private(set) var isLoadingNextPage = false
 
+    private let source: FeedSource
     private var oferta: String?
     private var nextPage: Int?
     private var loadedPages = Set<Int>()
     private let service: NewsFeedServicing
 
-    init(service: NewsFeedServicing = NewsFeedService()) {
+    init(source: FeedSource,
+         service: NewsFeedServicing = NewsFeedService()) {
+        self.source = source
         self.service = service
     }
 
@@ -29,7 +32,9 @@ final class NewsFeedViewModel: ObservableObject {
         resetPaging()
 
         do {
-            let response = try await service.fetch(oferta: nil, page: nil)
+            let response = try await service.fetch(source: source,
+                                                   oferta: nil,
+                                                   page: nil)
             self.items = response.items
             self.oferta = response.oferta
             self.nextPage = response.nextPage
@@ -56,7 +61,9 @@ final class NewsFeedViewModel: ObservableObject {
         loadedPages.insert(page)
 
         do {
-            let response = try await service.fetch(oferta: oferta, page: page)
+            let response = try await service.fetch(source: source,
+                                                   oferta: oferta,
+                                                   page: page)
             self.items.append(contentsOf: response.items)
             self.nextPage = response.nextPage
         } catch {

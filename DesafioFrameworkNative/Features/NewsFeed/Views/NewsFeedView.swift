@@ -8,9 +8,16 @@
 import SwiftUI
 
 struct NewsFeedView: View {
-    @StateObject private var viewModel = NewsFeedViewModel()
+    @StateObject private var viewModel: NewsFeedViewModel
     @State private var didAppear = false
     @State private var selectedURL: URLItem?
+    
+    private let source: FeedSource
+    
+    init(source: FeedSource) {
+        _viewModel = StateObject(wrappedValue: NewsFeedViewModel(source: source))
+        self.source = source
+    }
 
     var body: some View {
         NavigationView {
@@ -31,7 +38,7 @@ struct NewsFeedView: View {
                 }
             }
             .listStyle(.plain)
-            .navigationTitle("Notícias")
+            .navigationTitle(source.title)
             .refreshable { await viewModel.reload() }
             .overlay(statusOverlay)
         }
