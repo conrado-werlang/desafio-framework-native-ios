@@ -32,6 +32,15 @@ struct NewsItemView: View {
                     .foregroundColor(.secondary)
                     .lineLimit(3)
             }
+            
+            if let metadataText = item.metadataText, !metadataText.isEmpty {
+                 Text(metadataText)
+                     .font(.caption)
+                     .foregroundColor(.secondary)
+                     .lineLimit(1)
+                     .truncationMode(.tail)
+                 .padding(.top, 2)
+             }
         }
         .padding(.vertical, 8)
         .accessibilityElement(children: .combine)
