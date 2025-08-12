@@ -1,10 +1,28 @@
 # Xcode
+.DS_Store
 DerivedData/
 build/
-*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
-.DS_Store
+*.xcuserstate
+
+# Xcode project user data
+*.xcworkspace/
+*.xcscmblueprint
+*.xccheckout
+**/*.moved-aside
+**/*.xcuserdatad
+**/xcuserdata/**
+
+# Schemes
+**/xcuserdata/**
+!**/xcshareddata/**
+
+# Breakpoints & UI state
+**/xcdebugger/**
+**/*_v2.xcbkptlist
 
 # SwiftPM
-/.build/
-/Packages/
+.swiftpm/
 Package.resolved
+
+# CocoaPods (se não usar, ignore mesmo)
+Pods/
