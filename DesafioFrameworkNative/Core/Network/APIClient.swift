@@ -8,30 +8,31 @@
 import Foundation
 
 struct APIClient {
-    let session: URLSession
-
-    init(session: URLSession = .shared) {
-        self.session = session
+    func fetch<T: Decodable>(_ url: URL) async throws -> T {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        try Self.validate(response: response)
+        return try Self.decode(T.self, from: data)
     }
 
-    func fetch<T: Decodable>(_ url: URL) async throws -> T {
-        var request = URLRequest(url: url)
+    func fetchData(_ url: URL) async throws -> Data {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        try Self.validate(response: response)
+        return data
+    }
 
-        let (data, response) = try await session.data(for: request)
+    // MARK: - Helpers (estáticos, usados pelo Service)
 
+    static func validate(response: URLResponse) throws {
         guard let http = response as? HTTPURLResponse,
               (200...299).contains(http.statusCode) else {
             throw APIError.invalidResponse
         }
+    }
 
+    static func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-
-        do {
-            return try decoder.decode(T.self, from: data)
-        } catch {
-            throw APIError.decoding(error)
-        }
+        return try decoder.decode(T.self, from: data)
     }
 }

@@ -8,14 +8,15 @@
 import Foundation
 
 enum Endpoint {
-    case news(page: Int)
+    case firstNewsPage
+    case newsPage(oferta: String, page: Int)
 
     var url: URL {
         switch self {
-        case .news(let page):
-            var comps = URLComponents(string: "https://native-leon.globo.com/feed/g1")!
-            comps.queryItems = [URLQueryItem(name: "p", value: String(page))]
-            return comps.url!
+        case .firstNewsPage:
+            return URL(string: "https://native-leon.globo.com/feed/g1")!
+        case .newsPage(let oferta, let page):
+            return URL(string: "https://native-leon.globo.com/feed/page/g1/\(oferta)/\(page)")!
         }
     }
 }
