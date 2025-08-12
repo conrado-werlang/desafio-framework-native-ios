@@ -19,7 +19,7 @@ struct MainTabView: View {
                     Label("Agronegócio", systemImage: "leaf")
                 }
         
-            Text("Menu")
+            MenuView()
                 .tabItem {
                     Label("Menu", systemImage: "list.bullet")
                 }
