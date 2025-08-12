@@ -44,6 +44,17 @@ struct NewsItemView: View {
         }
         .padding(.vertical, 8)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityText)
+    }
+    
+    private var accessibilityText: String {
+        let parts = [
+            item.chapeu,
+            item.title,
+            item.summary,
+            item.metadataText
+        ].compactMap { $0 }.joined(separator: ". ")
+        return parts.isEmpty ? "Notícia" : parts
     }
 }
 
