@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum FeedSource {
+enum FeedSource: String, Codable {
     case g1
     case agro
 
@@ -21,7 +21,7 @@ enum FeedSource {
     var title: String {
         switch self {
         case .g1: return "Notícias"
-        case .agro: return "Agronegócios"
+        case .agro: return "Agronegócio"
         }
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct News: Identifiable {
+struct News: Identifiable, Codable {
     let id: String
     let type: String?
     let chapeu: String?
