@@ -18,6 +18,7 @@ final class NewsFeedViewModel: ObservableObject {
     private var currentPage: Int?
     private var oferta: String?
     private var loadingPages: Set<Int> = []
+    private var seenIDs: Set<String> = []
 
     private let source: FeedSource
     private let service: NewsFeedServicing
@@ -37,13 +38,14 @@ final class NewsFeedViewModel: ObservableObject {
         oferta = nil
         currentPage = nil
         loadingPages.removeAll()
+        seenIDs.removeAll()
         isLoadingNextPage = false
 
         do {
             let response = try await service.fetch(source: source,
                                                    oferta: nil,
                                                    page: nil)
-            items = response.items
+            appendUnique(response.items)
             oferta = response.oferta
             currentPage = response.nextPage.map { $0 - 1 }
             state = .loaded
@@ -56,7 +58,7 @@ final class NewsFeedViewModel: ObservableObject {
 
         } catch {
             if let cached = cache.load(source: source) {
-                items = cached.items
+                appendUnique(cached.items)
                 oferta = cached.oferta
                 currentPage = cached.nextPage.map { $0 - 1 }
                 state = .loaded
@@ -92,16 +94,18 @@ final class NewsFeedViewModel: ObservableObject {
 
         do {
             let result = try await service.fetch(source: source, oferta: oferta, page: next)
-            items.append(contentsOf: result.items)
+            appendUnique(result.items)
             self.oferta = result.oferta ?? oferta
             currentPage = next
 
             let snapshot = CachedFeed(source: source, date: Date(),
                                       items: items, oferta: oferta, nextPage: result.nextPage)
             try? cache.save(snapshot)
+        } catch { }
+    }
 
-        } catch {
-
-        }
+    private func appendUnique(_ newItems: [News]) {
+        let filtered = newItems.filter { seenIDs.insert($0.id).inserted }
+        items.append(contentsOf: filtered)
     }
 }
