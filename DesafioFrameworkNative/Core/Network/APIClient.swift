@@ -8,28 +8,43 @@
 import Foundation
 
 struct APIClient {
-    func fetch<T: Decodable>(_ url: URL) async throws -> T {
-        let (data, response) = try await URLSession.shared.data(from: url)
-        try Self.validate(response: response)
-        return try Self.decode(T.self, from: data)
+    private let session: URLSession
+
+    init(session: URLSession = .shared) {
+        self.session = session
     }
 
+    // MARK: - Public
+
     func fetchData(_ url: URL) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(from: url)
-        try Self.validate(response: response)
+        let req = makeRequest(url)
+        let (data, response) = try await session.data(for: req)
+        try validate(response)
         return data
     }
 
-    // MARK: - Helpers (estáticos, usados pelo Service)
+    func fetch<T: Decodable>(_ url: URL) async throws -> T {
+        let data = try await fetchData(url)
+        return try decode(T.self, from: data)
+    }
 
-    static func validate(response: URLResponse) throws {
+    // MARK: - Helpers
+
+    private func makeRequest(_ url: URL) -> URLRequest {
+        var req = URLRequest(url: url)
+        req.cachePolicy = .useProtocolCachePolicy
+        req.timeoutInterval = 20
+        return req
+    }
+
+    private func validate(_ response: URLResponse) throws {
         guard let http = response as? HTTPURLResponse,
               (200...299).contains(http.statusCode) else {
             throw APIError.invalidResponse
         }
     }
 
-    static func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+    private func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         decoder.keyDecodingStrategy = .convertFromSnakeCase
