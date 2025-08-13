@@ -33,16 +33,6 @@ struct NewsFeedService: NewsFeedServicing {
         let url = getUrl(source: source, oferta, page)
         let first = try await fetchAndParse(url)
 
-        if oferta == nil,
-           page == nil,
-           first.items.isEmpty,
-           let nextOferta = first.header.oferta,
-           let nextPage = first.header.nextPage
-        {
-            let fallback = try await fetchAndParse(getUrl(source: source, nextOferta, nextPage))
-            return (fallback.items, nextOferta, fallback.header.nextPage)
-        }
-
         return (first.items, first.header.oferta, first.header.nextPage)
     }
     
