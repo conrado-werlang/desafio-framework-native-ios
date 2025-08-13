@@ -24,11 +24,10 @@ enum Endpoint {
             case .webURL(let webUrl):
                 return baseURL.appendingPathComponent(webUrl)
             }
-
         case .page(let source, let oferta, let page):
             return baseURL
                 .appendingPathComponent("page")
-                .appendingPathComponent(source.pageSlug)
+                .appendingPathComponent(source.product)
                 .appendingPathComponent(oferta)
                 .appendingPathComponent(String(page))
         }
