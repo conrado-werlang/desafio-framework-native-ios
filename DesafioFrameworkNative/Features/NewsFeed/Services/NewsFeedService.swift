@@ -8,7 +8,8 @@
 import Foundation
 
 protocol NewsFeedServicing {
-    func fetch(source: FeedSource, oferta: String?, page: Int?) async throws -> (items: [News], oferta: String?, nextPage: Int?)
+    func fetch(source: FeedSource, oferta: String?, page: Int?) async throws
+    -> (items: [News], oferta: String?, nextPage: Int?)
 }
 
 struct NewsFeedService: NewsFeedServicing {
@@ -27,18 +28,18 @@ struct NewsFeedService: NewsFeedServicing {
         self.mapper = mapper
     }
     
+    // MARK: - Public
+    
     func fetch(source: FeedSource, oferta: String?, page: Int?) async throws
-        -> (items: [News], oferta: String?, nextPage: Int?)
-    {
-        let url = getUrl(source: source, oferta, page)
-        let first = try await fetchAndParse(url)
-
-        return (first.items, first.header.oferta, first.header.nextPage)
+    -> (items: [News], oferta: String?, nextPage: Int?) {
+        let url = makeURL(for: source, oferta: oferta, page: page)
+        let parsed = try await fetchAndParse(from: url)
+        return (parsed.items, parsed.header.oferta, parsed.header.nextPage)
     }
     
     // MARK: - Helpers
     
-    private func fetchAndParse(_ url: URL) async throws -> (items: [News], header: FeedHeader) {
+    private func fetchAndParse(from url: URL) async throws -> (items: [News], header: FeedHeader) {
         let data = try await api.fetchData(url)
         let header = try headerDecoder.decodeHeader(from: data)
         let dictItems = try falkorParser.extractItems(from: data)
@@ -47,10 +48,11 @@ struct NewsFeedService: NewsFeedServicing {
         return (filtered, header)
     }
     
-    func getUrl(source: FeedSource, _ oferta: String?, _ page: Int?) -> URL {
+    private func makeURL(for source: FeedSource, oferta: String?, page: Int?) -> URL {
         if let oferta, let page {
-            return Endpoint.newsPage(oferta: oferta, page: page).url
+            return Endpoint.page(source, oferta: oferta, page: page).url
+        } else {
+            return Endpoint.first(source).url
         }
-        return source.firstEndpoint.url
     }
 }
