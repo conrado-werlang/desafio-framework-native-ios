@@ -13,9 +13,9 @@ struct NewsItemView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             chapeuView
-            tituloView
-            resumoView
-            imagemView
+            titleView
+            summaryView
+            imageView
             metadataView
         }
         .padding(.vertical, 16)
@@ -37,7 +37,7 @@ private extension NewsItemView {
         }
     }
 
-    var tituloView: some View {
+    var titleView: some View {
         Text(item.title ?? "")
             .font(.title3.weight(.bold))
             .foregroundColor(.primaryG1)
@@ -45,7 +45,7 @@ private extension NewsItemView {
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    var resumoView: some View {
+    var summaryView: some View {
         Group {
             if let summary = item.summary, !summary.isEmpty {
                 Text(summary)
@@ -56,10 +56,13 @@ private extension NewsItemView {
         }
     }
 
-    var imagemView: some View {
-        NewsThumbnail(urlString: item.imageUrl)
-            .animation(nil, value: item.imageUrl)
-            .padding(.vertical, 16)
+    @ViewBuilder
+    var imageView: some View {
+        if let img = item.imageUrl, !img.isEmpty {
+            NewsThumbnail(urlString: img)
+                .animation(nil, value: item.imageUrl)
+                .padding(.vertical, 16)
+        }
     }
 
     var metadataView: some View {
