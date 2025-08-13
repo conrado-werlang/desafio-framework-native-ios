@@ -8,24 +8,29 @@
 import Foundation
 
 enum Endpoint {
-    case firstNewsG1
-    case firstURI(String)
-    case newsPage(oferta: String, page: Int)
+    case first(FeedSource)
+    case page(FeedSource, oferta: String, page: Int)
+
+    private var baseURL: URL {
+        URL(string: "https://native-leon.globo.com/feed")!
+    }
 
     var url: URL {
         switch self {
-        case .firstNewsG1:
-            return URL(string: "https://native-leon.globo.com/feed/g1")!
-        case .firstURI(let uri):
-            let urlString = "https://native-leon.globo.com/feed/\(uri)"
-            return URL(string: urlString)!
-        case .newsPage(let oferta, let page):
-            return URL(string: "https://native-leon.globo.com/feed/page/g1/\(oferta)/\(page)")!
+        case .first(let source):
+            switch source.firstEntry {
+            case .feedPath(let path):
+                return baseURL.appendingPathComponent(path)
+            case .webURL(let webUrl):
+                return baseURL.appendingPathComponent(webUrl)
+            }
+
+        case .page(let source, let oferta, let page):
+            return baseURL
+                .appendingPathComponent("page")
+                .appendingPathComponent(source.pageSlug)
+                .appendingPathComponent(oferta)
+                .appendingPathComponent(String(page))
         }
-    }
-    
-    static var firstNewsPage: Endpoint { .firstNewsG1 }
-    static var firstAgroPage: Endpoint {
-        .firstURI("https://g1.globo.com/economia/agronegocios")
     }
 }
