@@ -83,28 +83,28 @@ private extension NewsItemView {
 
 struct NewsThumbnail: View {
     let urlString: String?
-    var height: CGFloat = 200
-
+    var height: CGFloat = 180
+    
+    @StateObject private var loader = ImageLoader()
+    
     var body: some View {
-        if let urlString, let url = URL(string: urlString) {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: height)
-                        .clipped()
-                        .cornerRadius(12)
-                        .accessibilityHidden(true)
-                case .empty, .failure:
-                    ThumbnailPlaceholder(height: height)
-                @unknown default:
-                    ThumbnailPlaceholder(height: height)
-                }
+        Group {
+            if let image = loader.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: height)
+                    .clipped()
+                    .cornerRadius(12)
+                    .accessibilityHidden(true)
+            } else {
+                ThumbnailPlaceholder(height: height)
             }
-        } else {
-            ThumbnailPlaceholder(height: height)
+        }
+        .onAppear {
+            if let urlString, let url = URL(string: urlString) {
+                loader.load(from: url)
+            }
         }
     }
 }
