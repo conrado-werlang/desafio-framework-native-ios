@@ -15,32 +15,54 @@ final class NewsFeedViewModel: ObservableObject {
     @Published private(set) var items: [News] = []
     @Published private(set) var isLoadingNextPage = false
 
-    private let source: FeedSource
+    private var currentPage: Int?
     private var oferta: String?
-    private var nextPage: Int?
-    private var loadedPages = Set<Int>()
+    private var loadingPages: Set<Int> = []
+
+    private let source: FeedSource
     private let service: NewsFeedServicing
+    private let cache: FeedCaching
 
     init(source: FeedSource,
-         service: NewsFeedServicing = NewsFeedService()) {
+         service: NewsFeedServicing = NewsFeedService(),
+         cache: FeedCaching = FeedCacheStore()) {
         self.source = source
         self.service = service
+        self.cache = cache
     }
 
     func loadFirstPage() async {
         state = .loading
-        resetPaging()
+        items.removeAll()
+        oferta = nil
+        currentPage = nil
+        loadingPages.removeAll()
+        isLoadingNextPage = false
 
         do {
             let response = try await service.fetch(source: source,
                                                    oferta: nil,
                                                    page: nil)
-            self.items = response.items
-            self.oferta = response.oferta
-            self.nextPage = response.nextPage
-            self.state = .loaded
+            items = response.items
+            oferta = response.oferta
+            currentPage = response.nextPage.map { $0 - 1 }
+            state = .loaded
+
+            let snapshot = CachedFeed(source: source, date: Date(),
+                                      items: items,
+                                      oferta: oferta,
+                                      nextPage: response.nextPage)
+            try? cache.save(snapshot)
+
         } catch {
-            self.state = .error("Falha ao carregar notícias.")
+            if let cached = cache.load(source: source) {
+                items = cached.items
+                oferta = cached.oferta
+                currentPage = cached.nextPage.map { $0 - 1 }
+                state = .loaded
+            } else {
+                state = .error("Falha ao carregar notícias.")
+            }
         }
     }
 
@@ -49,34 +71,37 @@ final class NewsFeedViewModel: ObservableObject {
     func loadNextPageIfNeeded(currentItem: News?) async {
         guard case .loaded = state, !isLoadingNextPage else { return }
         guard let currentItem,
-              let index = items.firstIndex(where: { $0.id == currentItem.id }) else { return }
+              let idx = items.firstIndex(where: { $0.id == currentItem.id }) else { return }
 
         let threshold = max(items.count - 5, 0)
-        guard index >= threshold else { return }
-        guard let oferta,
-                let page = nextPage,
-                !loadedPages.contains(page) else { return }
+        guard idx >= threshold else { return }
 
+        await loadNextPage()
+    }
+
+    private func loadNextPage() async {
+        guard let oferta else { return }
+        let next = (currentPage ?? 0) + 1
+        guard !loadingPages.contains(next) else { return }
+        loadingPages.insert(next)
         isLoadingNextPage = true
-        loadedPages.insert(page)
+
+        defer {
+            isLoadingNextPage = false
+        }
 
         do {
-            let response = try await service.fetch(source: source,
-                                                   oferta: oferta,
-                                                   page: page)
-            self.items.append(contentsOf: response.items)
-            self.nextPage = response.nextPage
+            let result = try await service.fetch(source: source, oferta: oferta, page: next)
+            items.append(contentsOf: result.items)
+            self.oferta = result.oferta ?? oferta
+            currentPage = next
+
+            let snapshot = CachedFeed(source: source, date: Date(),
+                                      items: items, oferta: oferta, nextPage: result.nextPage)
+            try? cache.save(snapshot)
+
         } catch {
 
         }
-        isLoadingNextPage = false
-    }
-
-    private func resetPaging() {
-        items.removeAll()
-        isLoadingNextPage = false
-        oferta = nil
-        nextPage = nil
-        loadedPages.removeAll()
     }
 }
