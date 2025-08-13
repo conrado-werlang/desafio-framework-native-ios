@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct MainTabView: View {
+    
     var body: some View {
         TabView {
             NewsFeedView(source: .g1)
@@ -24,5 +25,6 @@ struct MainTabView: View {
                     Label("Menu", systemImage: "list.bullet")
                 }
         }
+        .tint(.black)
     }
 }

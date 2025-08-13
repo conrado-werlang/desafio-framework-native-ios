@@ -11,9 +11,9 @@ struct NewsFeedView: View {
     @StateObject private var viewModel: NewsFeedViewModel
     @State private var didAppear = false
     @State private var selectedURL: URLItem?
-    
+
     private let source: FeedSource
-    
+
     init(source: FeedSource) {
         _viewModel = StateObject(wrappedValue: NewsFeedViewModel(source: source))
         self.source = source
@@ -23,14 +23,16 @@ struct NewsFeedView: View {
         NavigationView {
             List {
                 ForEach(viewModel.items) { item in
-                    NewsItemView(item: item)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            if let link = item.url, let url = URL(string: link) {
-                                selectedURL = URLItem(url: url)
-                            }
+                    Button {
+                        if let s = item.url, let url = URL(string: s) {
+                            selectedURL = URLItem(url: url)
                         }
-                        .task { await viewModel.loadNextPageIfNeeded(currentItem: item) }
+                    } label: {
+                        NewsItemView(item: item)
+                            .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                    .task { await viewModel.loadNextPageIfNeeded(currentItem: item) }
                 }
 
                 if viewModel.isLoadingNextPage {
