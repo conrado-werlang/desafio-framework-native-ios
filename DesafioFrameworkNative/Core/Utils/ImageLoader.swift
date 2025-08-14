@@ -25,7 +25,7 @@ final class ImageLoader: ObservableObject {
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
                 if let img = UIImage(data: data) {
-                    // Salva no cache
+
                     Self.cache.setObject(img, forKey: url as NSURL)
                     
                     await MainActor.run {

@@ -73,10 +73,10 @@ final class NewsFeedViewModel: ObservableObject {
     func loadNextPageIfNeeded(currentItem: News?) async {
         guard case .loaded = state, !isLoadingNextPage else { return }
         guard let currentItem,
-              let idx = items.firstIndex(where: { $0.id == currentItem.id }) else { return }
+              let index = items.firstIndex(where: { $0.id == currentItem.id }) else { return }
 
         let threshold = max(items.count - 5, 0)
-        guard idx >= threshold else { return }
+        guard index >= threshold else { return }
 
         await loadNextPage()
     }

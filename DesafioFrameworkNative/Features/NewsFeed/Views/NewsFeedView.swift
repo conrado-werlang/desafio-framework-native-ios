@@ -60,18 +60,24 @@ struct NewsFeedView: View {
     private var statusOverlay: some View {
         switch viewModel.state {
         case .loading where viewModel.items.isEmpty:
-            ProgressView().scaleEffect(1.2)
+            ProgressView()
+                .scaleEffect(1.2)
+            
         case .error(let message) where viewModel.items.isEmpty:
             VStack(spacing: 12) {
                 Text(message)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
+                
                 Button("Tente novamente") { Task { await viewModel.reload() } }
+                
             }
             .padding()
+            
         case .loaded where viewModel.items.isEmpty:
             Text("Sem notícias no momento.")
                 .foregroundColor(.secondary)
+            
         default:
             EmptyView()
         }

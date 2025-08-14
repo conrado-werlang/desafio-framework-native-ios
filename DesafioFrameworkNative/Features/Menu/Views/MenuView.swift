@@ -46,13 +46,20 @@ struct MenuView: View {
         switch viewModel.state {
         case .loading where viewModel.items.isEmpty:
             ProgressView().scaleEffect(1.2)
+            
         case .error(let msg) where viewModel.items.isEmpty:
             VStack(spacing: 12) {
-                Text(msg).foregroundColor(.secondary).multilineTextAlignment(.center)
+                Text(msg)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                
                 Button("Tentar novamente") { Task { await viewModel.reload() } }
+                
             }.padding()
+            
         case .loaded where viewModel.items.isEmpty:
             Text("Nada por aqui.").foregroundColor(.secondary)
+            
         default:
             EmptyView()
         }

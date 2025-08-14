@@ -29,8 +29,8 @@ struct NewsItemView: View {
 private extension NewsItemView {
     var chapeuView: some View {
         Group {
-            if let ch = item.chapeu, !ch.isEmpty {
-                Text(ch)
+            if let chapeu = item.chapeu, !chapeu.isEmpty {
+                Text(chapeu)
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.primary)
             }
